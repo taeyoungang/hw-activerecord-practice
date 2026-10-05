@@ -23,10 +23,74 @@ class Customer < ApplicationRecord
   def self.any_candice
     # YOUR CODE HERE to return all customer(s) whose first name is Candice
     # probably something like:  Customer.where(....)
+    return Customer.where('first = ?', 'Candice')
   end
 
   def self.with_valid_email
     # YOUR CODE HERE to return only customers with valid email addresses (containing '@')
+    # working SQL: 
+    # SELECT * 
+    # FROM CUSTOMER
+    # WHERE email LIKE '%@%'
+    return Customer.where('email LIKE ?', '%@%')
   end
   # etc. - see README.md for more details
+
+  def self.with_dot_org_email
+    # working SQL:
+    # SELECT * 
+    # FROM CUSTOMER
+    # WHERE email like '%.org'
+    return Customer.where('email LIKE ?', '%.org')
+  end
+
+  def self.with_invalid_email
+    #working SQL:
+    # SELECT *
+    # FROM CUSTOMER
+    # WHERE email NOT LIKE '%@%'
+    return Customer.where.not('email LIKE ?', '%@%')
+  end
+
+  def self.with_blank_email
+    return Customer.where('email IS NULL OR email = ?', '')
+  end
+
+  def self.born_before_1980
+    return Customer.where('birthdate < ?', Date.new(1980, 1, 1))
+  end
+
+  def self.with_valid_email_and_born_before_1980
+    return Customer.where('(email LIKE ?) AND (birthdate < ?)', '%@%', Date.new(1980, 1, 1))
+  end
+
+  def self.last_names_starting_with_b
+    return Customer.where('last LIKE ?', 'b%').order(birthdate: :asc)
+  end
+
+  def self.twenty_youngest
+    return Customer.order(birthdate: :desc).limit(20)
+  end
+
+  def self.update_gussie_murray_birthdate
+    target = Customer.where('first = "Gussie" AND last = "Murray"').take
+    target.birthdate = Date.new(2004, 2, 8)
+    target.save
+  end
+
+  def self.change_all_invalid_emails_to_blank
+    targets = Customer.where.not('email LIKE ?', '%@%')
+    targets.each do |user|
+      user.email = ''
+      user.save
+    end
+  end
+
+  def self.delete_meggie_herman
+    Customer.where('first = "Meggie" AND last = "Herman"').delete_all
+  end
+
+  def self.delete_everyone_born_before_1978
+    Customer.where('birthdate < ?', Date.new(1978, 1, 1)).delete_all
+  end
 end
